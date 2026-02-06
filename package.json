@@ -8,7 +8,7 @@
     "setup:phase2": "npx snarkjs groth16 setup build/mixer.r1cs pot15_final.ptau build/mixer_0000.zkey && npx snarkjs zkey contribute build/mixer_0000.zkey build/mixer_0001.zkey --name=\"1st Contributor Name\" -v -e=\"another random text\" && npx snarkjs zkey export verificationkey build/mixer_0001.zkey build/verification_key.json",
     "setup": "npm run setup:phase1 && npm run setup:phase2",
     "test": "node test/test.js",
-    "generate-verifier": "snarkjs zkey export solidityverifier build/mixer_0001.zkey ./output/verifiers/MixerVerifier.sol"
+    "generate-verifier": "snarkjs zkey export solidityverifier build/mixer_0001.zkey ./output/MixerVerifier.sol"
   },
   "keywords": [
     "zk",
@@ -20,5 +20,8 @@
   "dependencies": {
     "circomlib": "^2.0.5",
     "snarkjs": "^0.7.5"
+  },
+  "devDependencies": {
+    "circomlibjs": "0.1.7"
   }
 }

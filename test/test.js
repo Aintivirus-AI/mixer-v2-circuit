@@ -1,9 +1,12 @@
 const snarkjs = require("snarkjs");
 const fs = require("fs");
 const path = require("path");
+const { buildPoseidon } = require("circomlibjs");
 
 async function testCircuit() {
     console.log("Testing Mixer Circuit...\n");
+
+    const LEVELS = 24;
 
     // Check if build files exist
     const wasmPath = path.join(__dirname, "../build/mixer_js/mixer.wasm");
@@ -21,8 +24,44 @@ async function testCircuit() {
     }
 
     if (!fs.existsSync(inputPath)) {
-        console.error("Error: Input file not found.");
-        return;
+        console.log("Input file not found. Generating a deterministic example input...");
+
+        const poseidon = await buildPoseidon();
+        const F = poseidon.F;
+
+        const toFieldString = (x) => F.toObject(x).toString();
+        const hash2 = (a, b) => poseidon([BigInt(a), BigInt(b)]);
+
+        // Deterministic demo values (do NOT use in production)
+        const secret = 1n;
+        const nullifier = 2n;
+
+        const commitment = hash2(secret, nullifier);
+        let cur = commitment;
+
+        const pathElements = [];
+        const pathIndices = [];
+        for (let i = 0; i < LEVELS; i++) {
+            // leaf/hash is always on the left, sibling is 0 on the right
+            pathElements.push("0");
+            pathIndices.push(0);
+            cur = hash2(F.toObject(cur), 0n);
+        }
+
+        const input = {
+            secret: secret.toString(),
+            nullifier: nullifier.toString(),
+            pathElements,
+            pathIndices,
+            root: toFieldString(cur),
+            recipient: "1",
+            fee: "0",
+            relayer: "0"
+        };
+
+        fs.mkdirSync(path.dirname(inputPath), { recursive: true });
+        fs.writeFileSync(inputPath, JSON.stringify(input, null, 2));
+        console.log("Example input written to:", inputPath);
     }
 
     // Load input
@@ -31,9 +70,9 @@ async function testCircuit() {
 
     // Generate witness
     console.log("\nGenerating witness...");
-    const { calculateWitness } = require(path.join(__dirname, "../build/mixer_js/witness_calculator"));
+    const witnessCalculatorBuilder = require(path.join(__dirname, "../build/mixer_js/witness_calculator"));
     const wasm = fs.readFileSync(wasmPath);
-    const witnessCalculator = await calculateWitness(wasm);
+    const witnessCalculator = await witnessCalculatorBuilder(wasm);
     const witness = await witnessCalculator.calculateWTNSBin(input, 0);
     const witnessPath = path.join(__dirname, "../build/witness.wtns");
     fs.writeFileSync(witnessPath, witness);
@@ -62,8 +101,9 @@ async function testCircuit() {
         console.log("\nPublic Signals:");
         console.log("  [0] nullifierHash:", publicSignals[0]);
         console.log("  [1] recipientAddress:", publicSignals[1]);
-        console.log("  [2] relayer:", publicSignals[2]);
-        console.log("  [3] root:", publicSignals[3]);
+        console.log("  [2] root:", publicSignals[2]);
+        console.log("  [3] fee:", publicSignals[3]);
+        console.log("  [4] relayer:", publicSignals[4]);
     } else {
         console.error("✗ Proof verification failed!");
     }

@@ -8,12 +8,19 @@ Place test input JSON files here for circuit testing.
 {
   "secret": "1234567890",
   "nullifier": "9876543210",
-  "pathElements": ["0x...", "0x...", ...],
-  "pathIndices": [0, 1, 0, ...],
-  "recipient": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
-  "relayer": "0x0000000000000000000000000000000000000000"
+  "pathElements": ["0", "0", "... 24 items total ..."],
+  "pathIndices": [0, 1, 0, "... 24 items total ..."],
+  "root": "12345678901234567890",
+  "recipient": "1",
+  "fee": "0",
+  "relayer": "0"
 }
 ```
+
+Notes:
+- All values should be **field elements / uint256** encoded as **decimal strings** (recommended).
+- `pathElements` and `pathIndices` must be length **24** (the circuit is compiled with 24 levels).
+- `recipient` / `relayer` are uint256 (e.g. Ethereum addresses can be provided as their 160-bit value in decimal).
 
 These inputs are used for:
 - Testing circuit compilation
