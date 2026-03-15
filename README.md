@@ -87,6 +87,23 @@ This prevents double-spending by ensuring each nullifier can only be used once.
 
 ### 1. Install Dependencies
 
+**Circom compiler and snarkjs**
+
+You need the [circom](https://docs.circom.io/getting-started/installation/) compiler (Rust) and [snarkjs](https://docs.circom.io/getting-started/installation/) to compile circuits and generate/verify proofs. Follow the official installation guide:
+
+- **Dependencies:** [Rust](https://rustup.rs/) (via `rustup`) and Node.js 10+
+- **Install circom** (from source):
+  ```bash
+  git clone https://github.com/iden3/circom.git
+  cd circom && cargo build --release && cargo install --path .
+  ```
+- **Install snarkjs** (global):
+  ```bash
+  npm install -g snarkjs
+  ```
+
+**Project dependencies**
+
 ```bash
 npm install
 # or
